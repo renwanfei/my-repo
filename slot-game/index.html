@@ -1,21 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>水果机游戏</title>
+  <title>🎰 水果机游戏</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       width: 100vw;
       height: 100vh;
       padding: 1rem;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -29,84 +25,124 @@
       flex-direction: column;
       align-items: center;
       gap: 20px;
+      width: 100%;
+      max-width: 900px;
     }
 
     #jackpot {
       color: #ffd700;
-      font-size: 48px;
+      font-size: clamp(24px, 5vw, 48px);
       font-weight: bold;
-      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
       letter-spacing: 3px;
+      text-align: center;
+    }
+
+    #reels-container {
+      width: 100%;
+      background: linear-gradient(180deg, #1a1a2e 0%, #0a0a15 100%);
+      border: 4px solid #ffd700;
+      border-radius: 20px;
+      padding: 15px;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.4), inset 0 0 30px rgba(0, 0, 0, 0.8);
     }
 
     #reels {
       display: flex;
-      width: 90vw;
-      max-width: 800px;
-      height: calc((3 / 5) * 90vw);
-      max-height: 500px;
-      background: linear-gradient(180deg, #2a2a4a 0%, #1a1a3a 100%);
-      border: 4px solid #ffd700;
-      border-radius: 15px;
-      padding: 10px;
-      box-shadow: 0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.5);
+      gap: 8px;
+      width: 100%;
+    }
+
+    .reel-wrapper {
+      flex: 1;
+      height: 240px;
+      background: linear-gradient(180deg, #0d0d1a 0%, #1a1a2e 50%, #0d0d1a 100%);
+      border-radius: 12px;
+      border: 2px solid #444;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .reel-wrapper::before,
+    .reel-wrapper::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 40px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .reel-wrapper::before {
+      top: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+    }
+
+    .reel-wrapper::after {
+      bottom: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
     }
 
     .reel {
-      overflow: hidden;
-      width: 20%;
-      height: 100%;
-      position: relative;
-      background: linear-gradient(180deg, #0a0a1a 0%, #1a1a2a 50%, #0a0a1a 100%);
-      border-radius: 8px;
-      border: 2px solid #444;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.1s linear;
     }
 
-    .reel > .icons {
-      position: relative;
-    }
-
-    .reel > .icons > img {
-      width: calc(100% + 6px);
-      margin: -3px 0 0 -3px;
-      height: 33.33%;
-      object-fit: contain;
-      display: block;
+    .symbol {
+      width: 100%;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      user-select: none;
+      flex-shrink: 0;
     }
 
     #controls {
       background: linear-gradient(180deg, #2a2a4a 0%, #1a1a3a 100%);
-      height: 60px;
+      height: 70px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 30px;
-      border-radius: 10px;
+      padding: 0 20px;
+      border-radius: 15px;
       border: 2px solid #ffd700;
+      width: 100%;
     }
 
     #spin {
-      background: linear-gradient(180deg, #ffd700 0%, #ffaa00 100%);
+      background: linear-gradient(180deg, #ffd700 0%, #ff8c00 100%);
       border: none;
-      padding: 12px 50px;
-      font-size: 24px;
+      padding: 15px 60px;
+      font-size: 28px;
       font-weight: bold;
       color: #1a1a2e;
-      border-radius: 25px;
+      border-radius: 30px;
       cursor: pointer;
       transition: all 0.2s ease;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
 
     #spin:hover:not(:disabled) {
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+      transform: scale(1.08);
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.7);
+    }
+
+    #spin:active:not(:disabled) {
+      transform: scale(0.95);
     }
 
     #spin:disabled {
       background: linear-gradient(180deg, #666 0%, #444 100%);
       color: #999;
       cursor: not-allowed;
+      box-shadow: none;
     }
 
     #controls label {
@@ -115,12 +151,13 @@
       margin: 0;
       color: #fff;
       font-size: 16px;
+      cursor: pointer;
     }
 
     #controls label input {
       margin-right: 8px;
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       cursor: pointer;
     }
 
@@ -129,37 +166,49 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(255, 215, 0, 0.95);
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
       color: #1a1a2e;
-      padding: 30px 60px;
-      border-radius: 20px;
-      font-size: 36px;
+      padding: 40px 80px;
+      border-radius: 25px;
+      font-size: 42px;
       font-weight: bold;
-      box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+      box-shadow: 0 0 80px rgba(255, 215, 0, 0.9);
       z-index: 1000;
-      animation: pulse 0.5s ease-in-out infinite alternate;
+      animation: winPulse 0.4s ease-in-out infinite alternate;
+      text-align: center;
+      white-space: nowrap;
     }
 
-    @keyframes pulse {
-      from { transform: translate(-50%, -50%) scale(1); }
-      to { transform: translate(-50%, -50%) scale(1.05); }
+    @keyframes winPulse {
+      from { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 80px rgba(255, 215, 0, 0.9); }
+      to { transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 0 100px rgba(255, 215, 0, 1); }
+    }
+
+    @keyframes spinBlur {
+      0% { filter: blur(0); }
+      50% { filter: blur(3px); }
+      100% { filter: blur(0); }
     }
 
     @media only screen and (max-width: 600px) {
-      #jackpot { font-size: 32px; }
-      #spin { padding: 10px 30px; font-size: 18px; }
+      .reel-wrapper { height: 180px; }
+      .symbol { height: 60px; font-size: 36px; }
+      #spin { padding: 12px 40px; font-size: 20px; }
+      #controls { padding: 0 15px; }
     }
   </style>
 </head>
 <body>
   <div id="slot">
-    <div id="jackpot">JACKPOT: <span id="jp">5,555,555</span></div>
-    <div id="reels">
-      <div class="reel"></div>
-      <div class="reel"></div>
-      <div class="reel"></div>
-      <div class="reel"></div>
-      <div class="reel"></div>
+    <div id="jackpot">🎰 JACKPOT: <span id="jp">5,555,555</span></div>
+    <div id="reels-container">
+      <div id="reels">
+        <div class="reel-wrapper"><div class="reel"></div></div>
+        <div class="reel-wrapper"><div class="reel"></div></div>
+        <div class="reel-wrapper"><div class="reel"></div></div>
+        <div class="reel-wrapper"><div class="reel"></div></div>
+        <div class="reel-wrapper"><div class="reel"></div></div>
+      </div>
     </div>
     <div id="controls">
       <button type="button" id="spin">SPIN</button>
@@ -171,91 +220,55 @@
   </div>
 
   <script>
-    // 符号定义 - 使用 emoji 代替 SVG
-    const SYMBOLS = ['🍎', '🍊', '🍋', '🍇', '🍉', '🍓', '🍒', '🍑', '💎', '7️⃣'];
-    const SYMBOL_NAMES = ['apple', 'orange', 'lemon', 'grape', 'watermelon', 'strawberry', 'cherry', 'peach', 'diamond', 'seven'];
+    // 符号定义 - 水果机经典符号
+    const SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '🍉', '🍓', '💎', '7️⃣', '⭐', '🍀'];
+    const SYMBOL_NAMES = ['cherry', 'lemon', 'orange', 'grape', 'watermelon', 'strawberry', 'diamond', 'seven', 'star', 'clover'];
 
-    class Symbol {
-      constructor(name = Symbol.random()) {
-        this.name = name;
-        this.img = document.createElement('div');
-        this.img.className = 'symbol';
-        this.img.textContent = this.getEmoji(name);
-        this.img.style.cssText = `
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 60px;
-          user-select: none;
-        `;
+    // 中奖赔率
+    const PAYOUTS = {
+      'cherry': 2,
+      'lemon': 3,
+      'orange': 5,
+      'grape': 8,
+      'watermelon': 10,
+      'strawberry': 15,
+      'diamond': 25,
+      'seven': 50,
+      'star': 100,
+      'clover': 200
+    };
+
+    class Reel {
+      constructor(reelElement, idx) {
+        this.reelElement = reelElement;
+        this.idx = idx;
+        this.symbols = [];
+        this.isSpinning = false;
+        this.symbolHeight = 80; // px, will be updated dynamically
       }
 
-      static getEmoji(name) {
+      init(initialSymbols) {
+        this.symbols = initialSymbols.slice();
+        this.reelElement.innerHTML = '';
+        this.symbols.forEach(name => {
+          const div = document.createElement('div');
+          div.className = 'symbol';
+          div.textContent = this.getEmoji(name);
+          this.reelElement.appendChild(div);
+        });
+        this.reelElement.style.transform = 'translateY(0)';
+      }
+
+      getEmoji(name) {
         const index = SYMBOL_NAMES.indexOf(name);
         return index >= 0 ? SYMBOLS[index] : '❓';
       }
 
-      static preload() {
-        // 预加载不需要，因为我们使用 emoji
-      }
-
-      static symbols() {
-        return SYMBOL_NAMES;
-      }
-
-      static random() {
+      getRandomSymbol() {
         return SYMBOL_NAMES[Math.floor(Math.random() * SYMBOL_NAMES.length)];
       }
-    }
 
-    class Reel {
-      constructor(reelContainer, idx, initialSymbols) {
-        this.reelContainer = reelContainer;
-        this.idx = idx;
-
-        this.symbolContainer = document.createElement('div');
-        this.symbolContainer.className = 'icons';
-        this.reelContainer.appendChild(this.symbolContainer);
-
-        this.animation = null;
-        this.isSpinning = false;
-
-        initialSymbols.forEach((symbol) => {
-          this.symbolContainer.appendChild(new Symbol(symbol).img);
-        });
-      }
-
-      get factor() {
-        return 1 + Math.pow(this.idx / 2, 2);
-      }
-
-      renderSymbols(nextSymbols) {
-        const fragment = document.createDocumentFragment();
-
-        for (let i = 3; i < 3 + Math.floor(this.factor) * 10; i++) {
-          const symbolDiv = document.createElement('div');
-          const name = i >= 10 * Math.floor(this.factor) - 2
-            ? nextSymbols[i - Math.floor(this.factor) * 10]
-            : Symbol.random();
-          symbolDiv.className = 'symbol';
-          symbolDiv.textContent = Symbol.getEmoji(name);
-          symbolDiv.style.cssText = `
-            width: 100%;
-            height: 33.33%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 60px;
-          `;
-          fragment.appendChild(symbolDiv);
-        }
-
-        this.symbolContainer.appendChild(fragment);
-      }
-
-      spin() {
+      spin(targetSymbols, duration) {
         return new Promise((resolve) => {
           if (this.isSpinning) {
             resolve();
@@ -263,131 +276,143 @@
           }
           this.isSpinning = true;
 
-          const duration = this.factor * 1500;
-          const startY = 0;
-          const endY = -((this.factor * 10 - 2) * 33.33);
+          // 创建滚动用的符号序列
+          const totalSymbols = 20 + this.idx * 5; // 每个滚轮不同长度
+          const scrollSymbols = [];
+          for (let i = 0; i < totalSymbols; i++) {
+            scrollSymbols.push(this.getRandomSymbol());
+          }
+          // 最后三个是目标符号
+          targetSymbols.forEach(name => scrollSymbols.push(name));
 
-          const startTime = performance.now();
+          // 重新构建 DOM
+          this.reelElement.innerHTML = '';
+          scrollSymbols.forEach(name => {
+            const div = document.createElement('div');
+            div.className = 'symbol';
+            div.textContent = this.getEmoji(name);
+            this.reelElement.appendChild(div);
+          });
 
-          const animate = (currentTime) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
+          const totalHeight = scrollSymbols.length * this.symbolHeight;
+          const targetY = -(totalHeight - 3 * this.symbolHeight);
 
-            // ease-out cubic
-            const eased = 1 - Math.pow(1 - progress, 3);
-            const currentY = startY + (endY - startY) * eased;
+          // 使用 CSS transition 实现平滑动画
+          this.reelElement.style.transition = `transform ${duration}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
+          this.reelElement.style.transform = `translateY(${targetY}px)`;
 
-            this.symbolContainer.style.transform = `translateY(${currentY}%)`;
-            this.symbolContainer.style.filter = progress < 0.8 ? 'blur(2px)' : 'blur(0)';
-
-            if (progress < 1) {
-              requestAnimationFrame(animate);
-            } else {
-              // 清理多余的符号
-              const max = this.symbolContainer.children.length - 3;
-              for (let i = 0; i < max; i++) {
-                if (this.symbolContainer.firstChild) {
-                  this.symbolContainer.removeChild(this.symbolContainer.firstChild);
-                }
-              }
-              this.symbolContainer.style.transform = 'translateY(0)';
-              this.symbolContainer.style.filter = 'blur(0)';
-              this.isSpinning = false;
-              resolve();
-            }
-          };
-
-          requestAnimationFrame(animate);
+          setTimeout(() => {
+            // 清理多余的符号，只保留最后 3 个
+            this.reelElement.innerHTML = '';
+            targetSymbols.forEach(name => {
+              const div = document.createElement('div');
+              div.className = 'symbol';
+              div.textContent = this.getEmoji(name);
+              this.reelElement.appendChild(div);
+            });
+            this.reelElement.style.transition = 'none';
+            this.reelElement.style.transform = 'translateY(0)';
+            this.isSpinning = false;
+            resolve();
+          }, duration + 50);
         });
       }
     }
 
-    class Slot {
-      constructor(domElement, config = {}) {
-        Symbol.preload();
+    class SlotMachine {
+      constructor() {
+        this.reels = [];
+        this.spinning = false;
+        this.jackpot = 5555555;
+        this.updateJackpot();
 
-        this.currentSymbols = [
-          ['apple', 'apple', 'apple'],
-          ['orange', 'orange', 'orange'],
-          ['lemon', 'lemon', 'lemon'],
-          ['grape', 'grape', 'grape'],
-          ['watermelon', 'watermelon', 'watermelon'],
+        // 初始化滚轮
+        const reelElements = document.querySelectorAll('.reel');
+        reelElements.forEach((el, idx) => {
+          this.reels.push(new Reel(el, idx));
+        });
+
+        // 设置初始符号
+        const initialSymbols = [
+          ['🍒', '🍋', '🍊'],
+          ['🍇', '🍉', '🍓'],
+          ['💎', '7️⃣', '⭐'],
+          ['🍀', '🍒', '🍋'],
+          ['🍊', '🍇', '🍉']
         ];
+        this.reels.forEach((reel, idx) => {
+          reel.init(initialSymbols[idx]);
+        });
 
-        this.nextSymbols = [
-          ['apple', 'apple', 'apple'],
-          ['orange', 'orange', 'orange'],
-          ['lemon', 'lemon', 'lemon'],
-          ['grape', 'grape', 'grape'],
-          ['watermelon', 'watermelon', 'watermelon'],
-        ];
+        // 绑定事件
+        document.getElementById('spin').addEventListener('click', () => this.spin());
+        document.getElementById('autoplay').addEventListener('change', (e) => {
+          if (e.target.checked && !this.spinning) {
+            this.spin();
+          }
+        });
 
-        this.container = domElement;
-        this.jackpotEl = document.getElementById('jp');
+        // 动态更新符号高度
+        window.addEventListener('resize', () => this.updateSymbolHeight());
+        this.updateSymbolHeight();
+      }
 
-        this.reels = Array.from(this.container.getElementsByClassName('reel')).map(
-          (reelContainer, idx) =>
-            new Reel(reelContainer, idx, this.currentSymbols[idx])
-        );
-
-        this.spinButton = document.getElementById('spin');
-        this.spinButton.addEventListener('click', () => this.spin());
-
-        this.autoPlayCheckbox = document.getElementById('autoplay');
-        this.isPlaying = false;
-
-        if (config.inverted) {
-          this.container.classList.add('inverted');
+      updateSymbolHeight() {
+        const firstReel = document.querySelector('.reel');
+        if (firstReel) {
+          const symbol = firstReel.querySelector('.symbol');
+          if (symbol) {
+            this.reels.forEach(reel => {
+              reel.symbolHeight = symbol.offsetHeight;
+            });
+          }
         }
-
-        this.config = config;
       }
 
       spin() {
-        if (this.spinButton.disabled) return;
+        if (this.spinning) return;
+        this.spinning = true;
 
-        this.currentSymbols = this.nextSymbols;
-        this.nextSymbols = [
-          [Symbol.random(), Symbol.random(), Symbol.random()],
-          [Symbol.random(), Symbol.random(), Symbol.random()],
-          [Symbol.random(), Symbol.random(), Symbol.random()],
-          [Symbol.random(), Symbol.random(), Symbol.random()],
-          [Symbol.random(), Symbol.random(), Symbol.random()],
-        ];
+        const spinBtn = document.getElementById('spin');
+        spinBtn.disabled = true;
 
-        this.onSpinStart(this.nextSymbols);
+        // 生成目标符号（每行3个）
+        const targetSymbols = this.reels.map(() => {
+          return [
+            SYMBOL_NAMES[Math.floor(Math.random() * SYMBOL_NAMES.length)],
+            SYMBOL_NAMES[Math.floor(Math.random() * SYMBOL_NAMES.length)],
+            SYMBOL_NAMES[Math.floor(Math.random() * SYMBOL_NAMES.length)]
+          ];
+        });
 
-        return Promise.all(
-          this.reels.map((reel) => {
-            reel.renderSymbols(this.nextSymbols[reel.idx]);
-            return reel.spin();
-          })
-        ).then(() => this.onSpinEnd(this.nextSymbols));
-      }
+        // 依次启动滚轮
+        this.reels.forEach((reel, idx) => {
+          const duration = 1500 + idx * 500; // 每个滚轮延迟启动
+          setTimeout(() => {
+            reel.spin(targetSymbols[idx], duration);
+          }, idx * 200);
+        });
 
-      onSpinStart(symbols) {
-        this.spinButton.disabled = true;
-        this.isPlaying = true;
-        this.config.onSpinStart?.(symbols);
-      }
+        // 等待所有滚轮停止
+        const maxDuration = 1500 + 4 * 500 + 400;
+        setTimeout(() => {
+          this.spinning = false;
+          spinBtn.disabled = false;
 
-      onSpinEnd(symbols) {
-        this.spinButton.disabled = false;
-        this.isPlaying = false;
+          // 检查中奖
+          this.checkWin(targetSymbols);
 
-        // 检查中奖
-        this.checkWin(symbols);
-
-        this.config.onSpinEnd?.(symbols);
-
-        if (this.autoPlayCheckbox.checked && this.isPlaying) {
-          window.setTimeout(() => this.spin(), 1000);
-        }
+          // 自动播放
+          if (document.getElementById('autoplay').checked) {
+            setTimeout(() => this.spin(), 1500);
+          }
+        }, maxDuration);
       }
 
       checkWin(symbols) {
-        // 检查每行是否相同
         let winLines = [];
+
+        // 检查每一行
         for (let row = 0; row < 3; row++) {
           const first = symbols[0][row];
           const isWin = symbols.every(reel => reel[row] === first);
@@ -402,34 +427,35 @@
       }
 
       showWin(winLines) {
+        const symbolNames = winLines.map(w => {
+          const idx = SYMBOL_NAMES.indexOf(w.symbol);
+          return SYMBOLS[idx];
+        });
+
         const message = document.createElement('div');
         message.className = 'win-message';
-        message.textContent = `🎉 中奖了! 🎉\n${winLines.map(w => `${w.symbol} x${winLines.length}`).join(' + ')}`;
+        message.innerHTML = `🎉 中奖了! 🎉<br><span style="font-size:28px">${symbolNames.join(' + ')}</span>`;
         document.body.appendChild(message);
 
         // 更新奖金
-        const currentJackpot = parseInt(this.jackpotEl.textContent.replace(/,/g, ''));
-        const newJackpot = currentJackpot + winLines.length * 100000;
-        this.jackpotEl.textContent = newJackpot.toLocaleString();
+        const totalWin = winLines.reduce((sum, w) => sum + (PAYOUTS[w.symbol] || 10) * 10000, 0);
+        this.jackpot += totalWin;
+        this.updateJackpot();
 
         setTimeout(() => {
           message.remove();
-        }, 3000);
+        }, 2500);
+      }
+
+      updateJackpot() {
+        document.getElementById('jp').textContent = this.jackpot.toLocaleString();
       }
     }
 
-    // 初始化游戏
-    const config = {
-      inverted: false,
-      onSpinStart: (symbols) => {
-        console.log('开始旋转', symbols);
-      },
-      onSpinEnd: (symbols) => {
-        console.log('旋转结束', symbols);
-      },
-    };
-
-    const slot = new Slot(document.getElementById('slot'), config);
+    // 启动游戏
+    window.addEventListener('DOMContentLoaded', () => {
+      new SlotMachine();
+    });
   </script>
 </body>
 </html>
