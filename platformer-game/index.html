@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎮 暗影猎人 - 横版闯关</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
+    }
+    #gameCanvas {
+      border: 3px solid #333;
+      image-rendering: pixelated;
+    }
+    #ui {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      text-align: center;
+      pointer-events: none;
+    }
+    #startScreen, #gameOverScreen, #victoryScreen {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    #startScreen h1, #gameOverScreen h1, #victoryScreen h1 {
+      color: #f39c12;
+      font-size: 48px;
+      margin-bottom: 20px;
+      text-shadow: 0 0 20px rgba(243, 156, 18, 0.5);
+    }
+    #startScreen p, #gameOverScreen p, #victoryScreen p {
+      color: #ecf0f1;
+      font-size: 18px;
+      margin: 10px 0;
+    }
+    .btn {
+      background: linear-gradient(180deg, #f39c12, #e67e22);
+      border: none;
+      padding: 15px 40px;
+      font-size: 24px;
+      color: #fff;
+      border-radius: 30px;
+      cursor: pointer;
+      margin-top: 30px;
+      transition: transform 0.2s;
+      pointer-events: all;
+    }
+    .btn:hover { transform: scale(1.1); }
+    .controls {
+      margin-top: 30px;
+      padding: 20px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+    .controls h3 { color: #f39c12; margin-bottom: 15px; }
+    .controls p { color: #bdc3c7; font-size: 14px; margin: 5px 0; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <!-- 开始界面 -->
+  <div id="startScreen">
+    <h1>🎮 暗影猎人</h1>
+    <p>穿越五关，击败虚空皇帝！</p>
+    <button class="btn" onclick="game.start()">开始游戏</button>
+    <div class="controls">
+      <h3>操作说明</h3>
+      <p>🎮 WASD / 方向键 - 移动</p>
+      <p>⚔️ J / 1 - 普通攻击</p>
+      <p>🔥 K / 2 - 魔法箭</p>
+      <p>💨 L / 3 - 闪避冲刺</p>
+      <p>⭐ U / 4 - 终极技能</p>
+    </div>
+  </div>
+
+  <!-- 游戏结束界面 -->
+  <div id="gameOverScreen" class="hidden">
+    <h1>💀 游戏结束</h1>
+    <p id="deathInfo">你倒在了第 1 关...</p>
+    <button class="btn" onclick="game.restart()">重新开始</button>
+  </div>
+
+  <!-- 胜利界面 -->
+  <div id="victoryScreen" class="hidden">
+    <h1>🎉 恭喜通关！</h1>
+    <p id="victoryInfo">你击败了虚空皇帝，拯救了世界！</p>
+    <p id="statsInfo"></p>
+    <button class="btn" onclick="game.restart()">再玩一次</button>
+  </div>
+
+  <canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+  <script src="engine.js"></script>
+  <script src="entities.js"></script>
+  <script src="levels.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
