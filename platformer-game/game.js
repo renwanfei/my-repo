@@ -55,7 +55,7 @@ class Game {
   }
 
   resetGame() {
-    this.player = new Player(100, 500);
+    this.player = new Knight(100, 500);
     this.levelManager = new LevelManager();
     this.stats = { kills: 0, damageDealt: 0, damageTaken: 0, time: 0 };
   }
