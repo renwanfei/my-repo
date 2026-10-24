@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>水果机游戏</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      padding: 1rem;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
+    }
+
+    #slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    #jackpot {
+      color: #ffd700;
+      font-size: 48px;
+      font-weight: bold;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      letter-spacing: 3px;
+    }
+
+    #reels {
+      display: flex;
+      width: 90vw;
+      max-width: 800px;
+      height: calc((3 / 5) * 90vw);
+      max-height: 500px;
+      background: linear-gradient(180deg, #2a2a4a 0%, #1a1a3a 100%);
+      border: 4px solid #ffd700;
+      border-radius: 15px;
+      padding: 10px;
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .reel {
+      overflow: hidden;
+      width: 20%;
+      height: 100%;
+      position: relative;
+      background: linear-gradient(180deg, #0a0a1a 0%, #1a1a2a 50%, #0a0a1a 100%);
+      border-radius: 8px;
+      border: 2px solid #444;
+    }
+
+    .reel > .icons {
+      position: relative;
+    }
+
+    .reel > .icons > img {
+      width: calc(100% + 6px);
+      margin: -3px 0 0 -3px;
+      height: 33.33%;
+      object-fit: contain;
+      display: block;
+    }
+
+    #controls {
+      background: linear-gradient(180deg, #2a2a4a 0%, #1a1a3a 100%);
+      height: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 30px;
+      border-radius: 10px;
+      border: 2px solid #ffd700;
+    }
+
+    #spin {
+      background: linear-gradient(180deg, #ffd700 0%, #ffaa00 100%);
+      border: none;
+      padding: 12px 50px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #1a1a2e;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    }
+
+    #spin:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+    }
+
+    #spin:disabled {
+      background: linear-gradient(180deg, #666 0%, #444 100%);
+      color: #999;
+      cursor: not-allowed;
+    }
+
+    #controls label {
+      display: flex;
+      align-items: center;
+      margin: 0;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    #controls label input {
+      margin-right: 8px;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .win-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 215, 0, 0.95);
+      color: #1a1a2e;
+      padding: 30px 60px;
+      border-radius: 20px;
+      font-size: 36px;
+      font-weight: bold;
+      box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+      z-index: 1000;
+      animation: pulse 0.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: translate(-50%, -50%) scale(1); }
+      to { transform: translate(-50%, -50%) scale(1.05); }
+    }
+
+    @media only screen and (max-width: 600px) {
+      #jackpot { font-size: 32px; }
+      #spin { padding: 10px 30px; font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="slot">
+    <div id="jackpot">JACKPOT: <span id="jp">5,555,555</span></div>
+    <div id="reels">
+      <div class="reel"></div>
+      <div class="reel"></div>
+      <div class="reel"></div>
+      <div class="reel"></div>
+      <div class="reel"></div>
+    </div>
+    <div id="controls">
+      <button type="button" id="spin">SPIN</button>
+      <label>
+        <input type="checkbox" id="autoplay" />
+        自动播放
+      </label>
+    </div>
+  </div>
+
+  <script>
+    // 符号定义 - 使用 emoji 代替 SVG
+    const SYMBOLS = ['🍎', '🍊', '🍋', '🍇', '🍉', '🍓', '🍒', '🍑', '💎', '7️⃣'];
+    const SYMBOL_NAMES = ['apple', 'orange', 'lemon', 'grape', 'watermelon', 'strawberry', 'cherry', 'peach', 'diamond', 'seven'];
+
+    class Symbol {
+      constructor(name = Symbol.random()) {
+        this.name = name;
+        this.img = document.createElement('div');
+        this.img.className = 'symbol';
+        this.img.textContent = this.getEmoji(name);
+        this.img.style.cssText = `
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 60px;
+          user-select: none;
+        `;
+      }
+
+      static getEmoji(name) {
+        const index = SYMBOL_NAMES.indexOf(name);
+        return index >= 0 ? SYMBOLS[index] : '❓';
+      }
+
+      static preload() {
+        // 预加载不需要，因为我们使用 emoji
+      }
+
+      static symbols() {
+        return SYMBOL_NAMES;
+      }
+
+      static random() {
+        return SYMBOL_NAMES[Math.floor(Math.random() * SYMBOL_NAMES.length)];
+      }
+    }
+
+    class Reel {
+      constructor(reelContainer, idx, initialSymbols) {
+        this.reelContainer = reelContainer;
+        this.idx = idx;
+
+        this.symbolContainer = document.createElement('div');
+        this.symbolContainer.className = 'icons';
+        this.reelContainer.appendChild(this.symbolContainer);
+
+        this.animation = null;
+        this.isSpinning = false;
+
+        initialSymbols.forEach((symbol) => {
+          this.symbolContainer.appendChild(new Symbol(symbol).img);
+        });
+      }
+
+      get factor() {
+        return 1 + Math.pow(this.idx / 2, 2);
+      }
+
+      renderSymbols(nextSymbols) {
+        const fragment = document.createDocumentFragment();
+
+        for (let i = 3; i < 3 + Math.floor(this.factor) * 10; i++) {
+          const symbolDiv = document.createElement('div');
+          const name = i >= 10 * Math.floor(this.factor) - 2
+            ? nextSymbols[i - Math.floor(this.factor) * 10]
+            : Symbol.random();
+          symbolDiv.className = 'symbol';
+          symbolDiv.textContent = Symbol.getEmoji(name);
+          symbolDiv.style.cssText = `
+            width: 100%;
+            height: 33.33%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+          `;
+          fragment.appendChild(symbolDiv);
+        }
+
+        this.symbolContainer.appendChild(fragment);
+      }
+
+      spin() {
+        return new Promise((resolve) => {
+          if (this.isSpinning) {
+            resolve();
+            return;
+          }
+          this.isSpinning = true;
+
+          const duration = this.factor * 1500;
+          const startY = 0;
+          const endY = -((this.factor * 10 - 2) * 33.33);
+
+          const startTime = performance.now();
+
+          const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // ease-out cubic
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const currentY = startY + (endY - startY) * eased;
+
+            this.symbolContainer.style.transform = `translateY(${currentY}%)`;
+            this.symbolContainer.style.filter = progress < 0.8 ? 'blur(2px)' : 'blur(0)';
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              // 清理多余的符号
+              const max = this.symbolContainer.children.length - 3;
+              for (let i = 0; i < max; i++) {
+                if (this.symbolContainer.firstChild) {
+                  this.symbolContainer.removeChild(this.symbolContainer.firstChild);
+                }
+              }
+              this.symbolContainer.style.transform = 'translateY(0)';
+              this.symbolContainer.style.filter = 'blur(0)';
+              this.isSpinning = false;
+              resolve();
+            }
+          };
+
+          requestAnimationFrame(animate);
+        });
+      }
+    }
+
+    class Slot {
+      constructor(domElement, config = {}) {
+        Symbol.preload();
+
+        this.currentSymbols = [
+          ['apple', 'apple', 'apple'],
+          ['orange', 'orange', 'orange'],
+          ['lemon', 'lemon', 'lemon'],
+          ['grape', 'grape', 'grape'],
+          ['watermelon', 'watermelon', 'watermelon'],
+        ];
+
+        this.nextSymbols = [
+          ['apple', 'apple', 'apple'],
+          ['orange', 'orange', 'orange'],
+          ['lemon', 'lemon', 'lemon'],
+          ['grape', 'grape', 'grape'],
+          ['watermelon', 'watermelon', 'watermelon'],
+        ];
+
+        this.container = domElement;
+        this.jackpotEl = document.getElementById('jp');
+
+        this.reels = Array.from(this.container.getElementsByClassName('reel')).map(
+          (reelContainer, idx) =>
+            new Reel(reelContainer, idx, this.currentSymbols[idx])
+        );
+
+        this.spinButton = document.getElementById('spin');
+        this.spinButton.addEventListener('click', () => this.spin());
+
+        this.autoPlayCheckbox = document.getElementById('autoplay');
+        this.isPlaying = false;
+
+        if (config.inverted) {
+          this.container.classList.add('inverted');
+        }
+
+        this.config = config;
+      }
+
+      spin() {
+        if (this.spinButton.disabled) return;
+
+        this.currentSymbols = this.nextSymbols;
+        this.nextSymbols = [
+          [Symbol.random(), Symbol.random(), Symbol.random()],
+          [Symbol.random(), Symbol.random(), Symbol.random()],
+          [Symbol.random(), Symbol.random(), Symbol.random()],
+          [Symbol.random(), Symbol.random(), Symbol.random()],
+          [Symbol.random(), Symbol.random(), Symbol.random()],
+        ];
+
+        this.onSpinStart(this.nextSymbols);
+
+        return Promise.all(
+          this.reels.map((reel) => {
+            reel.renderSymbols(this.nextSymbols[reel.idx]);
+            return reel.spin();
+          })
+        ).then(() => this.onSpinEnd(this.nextSymbols));
+      }
+
+      onSpinStart(symbols) {
+        this.spinButton.disabled = true;
+        this.isPlaying = true;
+        this.config.onSpinStart?.(symbols);
+      }
+
+      onSpinEnd(symbols) {
+        this.spinButton.disabled = false;
+        this.isPlaying = false;
+
+        // 检查中奖
+        this.checkWin(symbols);
+
+        this.config.onSpinEnd?.(symbols);
+
+        if (this.autoPlayCheckbox.checked && this.isPlaying) {
+          window.setTimeout(() => this.spin(), 1000);
+        }
+      }
+
+      checkWin(symbols) {
+        // 检查每行是否相同
+        let winLines = [];
+        for (let row = 0; row < 3; row++) {
+          const first = symbols[0][row];
+          const isWin = symbols.every(reel => reel[row] === first);
+          if (isWin) {
+            winLines.push({ row, symbol: first });
+          }
+        }
+
+        if (winLines.length > 0) {
+          this.showWin(winLines);
+        }
+      }
+
+      showWin(winLines) {
+        const message = document.createElement('div');
+        message.className = 'win-message';
+        message.textContent = `🎉 中奖了! 🎉\n${winLines.map(w => `${w.symbol} x${winLines.length}`).join(' + ')}`;
+        document.body.appendChild(message);
+
+        // 更新奖金
+        const currentJackpot = parseInt(this.jackpotEl.textContent.replace(/,/g, ''));
+        const newJackpot = currentJackpot + winLines.length * 100000;
+        this.jackpotEl.textContent = newJackpot.toLocaleString();
+
+        setTimeout(() => {
+          message.remove();
+        }, 3000);
+      }
+    }
+
+    // 初始化游戏
+    const config = {
+      inverted: false,
+      onSpinStart: (symbols) => {
+        console.log('开始旋转', symbols);
+      },
+      onSpinEnd: (symbols) => {
+        console.log('旋转结束', symbols);
+      },
+    };
+
+    const slot = new Slot(document.getElementById('slot'), config);
+  </script>
+</body>
+</html>
